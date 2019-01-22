@@ -1,0 +1,11 @@
+site_name: SquiggleKit Docs
+nav:
+    - Home: index.md
+    - Files and folders: files.md
+    - Installation: install.md
+    - fast5_fetcher: fast5_fetcher.md
+    - SquigglePull: SquigglePull.md
+    - segmenter: segmenter.md
+    - MotifSeq: MotifSeq.md
+    - Examples: examples.md
+theme: readthedocs
