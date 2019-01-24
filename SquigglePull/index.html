@@ -76,6 +76,24 @@
     <li class="toctree-l2"><a href="#squigglepull">SquigglePull</a></li>
     
 
+    <li class="toctree-l2"><a href="#background">Background</a></li>
+    
+
+    <li class="toctree-l2"><a href="#getting-started">Getting Started</a></li>
+    
+
+    <li class="toctree-l2"><a href="#inputs">Inputs</a></li>
+    
+
+    <li class="toctree-l2"><a href="#instructions-for-use">Instructions for use</a></li>
+    
+
+    <li class="toctree-l2"><a href="#quick-start">Quick start</a></li>
+    
+
+    <li class="toctree-l2"><a href="#full-usage">Full usage</a></li>
+    
+
     </ul>
 	    </li>
           
@@ -127,7 +145,54 @@
             <div class="section">
               
                 <h1 id="squigglepull">SquigglePull</h1>
-<p>Squigglepull docs</p>
+<h1 id="background">Background</h1>
+<p>Up until early 2019, Oxford Nanopore sequencing devices stored the raw current measurements and associated metadata in a single Hierarchical Data Format (HDF5) format file, called a fast5 file. After early 2019 devices were updated to produce multi-fast5 files, which contained multiple reads, usually 4000, in a single file.</p>
+<p>Processing fast5 files has been troublesome for a number of reasons:</p>
+<ul>
+<li>Unfamiliar format to many people.</li>
+<li>Need 3rd party library to open and read (h5py, pytables).</li>
+<li>libraries are not <a href="https://support.hdfgroup.org/HDF5/faq/threadsafe.html">thread safe</a> and locks files.</li>
+<li>Don't compress as well when single files. (better in multi-fast5)</li>
+</ul>
+<p>SquigglePull outputs a single tab separated value (.tsv) file where each row contains a single signal and read selected metadata.</p>
+<p><strong><em>Current format is designed as an example of producing a more accessible file format for those wishing to get started with nanopore signal data. Columns and data inclusion is subject to change depending on use case.</em></strong></p>
+<h1 id="getting-started">Getting Started</h1>
+<p>SquigglePull can extract both raw current measurements as well as event data. It also has some basic arguments and code scaffolding extraction profiles. This allows the user to implement their analysis methods into the extraction protocol for integration with pipelines, or just quick data trimming. For example using the form <code>-f pos1</code>, and the tarting <code>-t 20,110</code>, only the signal values between 20 and 110 will be extracted.</p>
+<h1 id="inputs">Inputs</h1>
+<p>SquigglePull takes 3 mandatory arguments</p>
+<ol>
+<li>path - Top directory of fast5 files</li>
+<li>form - Format of targeting information (default: all)</li>
+<li>raw/event - Raw signal or event data</li>
+</ol>
+<h1 id="instructions-for-use">Instructions for use</h1>
+<p>Simply point SquigglePull to a top directory containing fast5 files, and the signal will be extracted to <code>STDOUT</code></p>
+<h1 id="quick-start">Quick start</h1>
+<p><strong>Extract all raw signal</strong></p>
+<pre><code>python SquigglePull.py -r -p test/R9_raw_data/ &gt; data.tsv
+</code></pre>
+<p><strong>Extract events between position 20 and 210</strong></p>
+<pre><code>python SquigglePull.py -e -p test/R9_event_data/ -t 20,110 -f pos1 &gt; data.tsv
+</code></pre>
+<h1 id="full-usage">Full usage</h1>
+<pre><code>usage: SquigglePull.py [-h] [-p PATH] [-t TARGET] [-f {pos1,all}] [-r | -e]
+[-v] [-s]
+
+SquigglePull - extraction of raw/event signal from Oxford Nanopore fast5 files
+
+optional arguments:
+-h, --help            show this help message and exit
+-p PATH, --path PATH  Top directory path of fast5 files
+-t TARGET, --target TARGET
+Target information as comma delimited string
+structured by format type
+-f {pos1,all}, --form {pos1,all}
+Format of target information
+-r, --raw             Target raw signal
+-e, --event           Target event signal
+-v, --verbose         Engage higher output verbosity
+-s, --scale           Scale signal output for comparison
+</code></pre>
               
             </div>
           </div>
