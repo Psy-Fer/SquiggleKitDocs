@@ -68,7 +68,35 @@
     <a class="current" href="./">fast5_fetcher</a>
     <ul class="subnav">
             
-    <li class="toctree-l2"><a href="#fast5_fetcher">Fast5_fetcher</a></li>
+    <li class="toctree-l2"><a href="#fast5_fetcher">fast5_fetcher</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#doing-the-heavy-lifting-for-you">Doing the heavy lifting for you.</a></li>
+        
+        </ul>
+    
+
+    <li class="toctree-l2"><a href="#background">Background</a></li>
+    
+
+    <li class="toctree-l2"><a href="#getting-started">Getting Started</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#file-structures">File structures</a></li>
+        
+            <li><a class="toctree-l3" href="#inputs">Inputs</a></li>
+        
+            <li><a class="toctree-l3" href="#instructions-for-use">Instructions for use</a></li>
+        
+            <li><a class="toctree-l3" href="#fast5_fetcherpy">fast5_fetcher.py</a></li>
+        
+            <li><a class="toctree-l3" href="#trimming-fastq-and-sequencing_summary-files">Trimming fastq and sequencing_summary files</a></li>
+        
+            <li><a class="toctree-l3" href="#batch_taterpy">batch_tater.py</a></li>
+        
+        </ul>
     
 
     </ul>
@@ -126,8 +154,154 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="fast5_fetcher">Fast5_fetcher</h1>
-<p>fast5_fetcher docs</p>
+                <h1 id="fast5_fetcher">fast5_fetcher</h1>
+<h4 id="doing-the-heavy-lifting-for-you">Doing the heavy lifting for you.</h4>
+<p><strong>fast5_fetcher</strong> is a tool for fetching nanopore fast5 files to save time and simplify downstream analysis.</p>
+<h1 id="background">Background</h1>
+<p>Reducing the number of fast5 files per folder in a single experiment was a welcomed addition to MinKnow. However this also made it rather useful for manual basecalling on a cluster, using array jobs, where each folder is basecalled individually, producing its own <code>sequencing_summary.txt</code>, <code>reads.fastq</code>, and reads folder containing the newly basecalled fast5s. Taring those fast5 files up into a single file was needed to keep the sys admins at bay, complaining about our millions of individual files on their drives. This meant, whenever there was a need to use the fast5 files from an experiment, or many experiments, unpacking the fast5 files was a significant hurdle both in time and disk space.</p>
+<p><strong>fast5_fetcher</strong> was built to  address this bottleneck. By building an index file of the tarballs, and using the <code>sequencing_summary.txt</code> file to match readIDs with fast5 filenames, only the fast5 files you need can be  extracted, either temporarily in a pipeline, or permanently, reducing space and simplifying downstream work flows.</p>
+<h1 id="getting-started">Getting Started</h1>
+<p>Building an index of fast5 files and their paths, as well as a simple bash script to control the workflow, be it on a local machine, or HPC, will depend on the starting file structure.</p>
+<h2 id="file-structures">File structures</h2>
+<p>See <strong>Files and folders</strong> section</p>
+<h2 id="inputs">Inputs</h2>
+<p>It takes 3 files as input:</p>
+<ol>
+<li>fastq, paf, or flat (.gz)</li>
+<li>sequencing_summary.txt(.gz)</li>
+<li>name.index(.gz)</li>
+</ol>
+<h3 id="1-fastq-paf-or-flat">1. fastq, paf, or flat</h3>
+<p>This is where the readIDs are collected, to be matched with their respective fast5 files for fetching. The idea being, that some form of selection has occurred to generate the files.</p>
+<p>In the case of a <strong>fastq</strong>, it may be filtered for all the reads above a certain quality, or from a particular barcode after running barcode detection.</p>
+<p>For the <strong>paf</strong> file, it is an alignment output of minimap2. This can be used to fetch only the fast5 files that align to some reference, or has been filtered to only contain the reads that align to a particular region of interest.</p>
+<p>A <strong>flat</strong> file in this case is just a file that contains a list of readIDs, one on each line. This allows the user to generate any list of reads to fetch from any other desired method.</p>
+<p>Each of these files can be gzipped or not.</p>
+<p>See examples below for example test cases.</p>
+<h3 id="2-sequencing-summary">2. Sequencing summary</h3>
+<p>The <code>sequencing_summary.txt</code> file is created by the basecalling software, (Albacore, Guppy), and contains information about each read, including the readID and fast5 file name, along with length, quality scores, and potentially barcode information.</p>
+<p>There is a shortcut method in which you can use the <code>sequencing_summary.txt</code> only, without the need for a fastq, paf, or flat file. In this case, leave the <code>-q</code>, <code>-f</code>, <code>-r</code> fields empty.</p>
+<p>This file can be gzipped or not.</p>
+<h4 id="3-building-the-index">3. Building the index</h4>
+<p>How the index is built depends on which file structure you are using. It will work with both tarred and un-tarred file structures. Tarred is preferred.</p>
+<h5 id="-raw-structure-not-preferred">- Raw structure (not preferred)</h5>
+<pre><code class="bash">for file in $(pwd)/reads/*/*;do echo $file; done &gt;&gt; name.index
+
+gzip name.index
+</code></pre>
+
+<h5 id="-local-basecalled-structure">- Local basecalled structure</h5>
+<pre><code class="bash">for file in $(pwd)/reads.tar; do echo $file; tar -tf $file; done &gt;&gt; name.index
+
+gzip name.index
+</code></pre>
+
+<h5 id="-parallel-basecalled-structure">- Parallel basecalled structure</h5>
+<pre><code class="bash">for file in $(pwd)/fast5/*fast5.tar; do echo $file; tar -tf $file; done &gt;&gt; name.index
+</code></pre>
+
+<p>If you have multiple experiments, then cat them all together and gzip.</p>
+<pre><code class="bash">for file in ./*.index; do cat $file; done &gt;&gt; ../all.name.index
+
+gzip all.name.index
+</code></pre>
+
+<h2 id="instructions-for-use">Instructions for use</h2>
+<p>If using MacOS, and NOT using homebrew, install it here:</p>
+<pre><code>https://brew.sh/
+</code></pre>
+<p>then install gnu-tar with:</p>
+<pre><code>brew install gnu-tar
+</code></pre>
+<h3 id="quick-start">Quick start</h3>
+<p>Basic use on a local computer</p>
+<p><strong>fastq</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -q my.fastq.gz -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<p><strong>paf</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -p my.paf -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<p><strong>flat</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -f my_flat.txt.gz -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<p><strong>sequencing_summary.txt only</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<p>See examples below for use on an <strong>HPC</strong> using <strong>SGE</strong></p>
+<h2 id="fast5_fetcherpy">fast5_fetcher.py</h2>
+<h4 id="full-usage">Full usage</h4>
+<pre><code>usage: fast5_fetcher.py [-h] [-q FASTQ | -p PAF | -f FLAT] [--OSystem OSYSTEM]
+                        [-s SEQ_SUM] [-i INDEX] [-o OUTPUT] [-t]
+                        [-l TRIM_LIST] [-x PREFIX] [-z]
+
+fast_fetcher - extraction of specific nanopore fast5 files
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -q FASTQ, --fastq FASTQ
+                        fastq.gz for read ids
+  -p PAF, --paf PAF     paf alignment file for read ids
+  -f FLAT, --flat FLAT  flat file of read ids
+  --OSystem OSYSTEM     running operating system - leave default unless doing
+                        odd stuff
+  -s SEQ_SUM, --seq_sum SEQ_SUM
+                        sequencing_summary.txt.gz file
+  -i INDEX, --index INDEX
+                        index.gz file mapping fast5 files in tar archives
+  -o OUTPUT, --output OUTPUT
+                        output directory for extracted fast5s
+  -t, --trim            trim files as if standalone experiment, (fq, SS)
+  -l TRIM_LIST, --trim_list TRIM_LIST
+                        list of file names to trim, comma separated. fastq
+                        only needed for -p and -f modes
+  -x PREFIX, --prefix PREFIX
+                        trim file prefix, eg: barcode_01, output:
+                        barcode_01.fastq, barcode_01_seq_sum.txt
+  -z, --pppp            Print out tar commands in batches for further
+                        processing
+</code></pre>
+<h2 id="trimming-fastq-and-sequencing_summary-files">Trimming fastq and sequencing_summary files</h2>
+<p>By using the <code>-t, --trim</code> option, each barcode will also have its own sequencing_summary file for downstream analysis. This is particularly useful if each barcode is a different sample or experiment, as the output is as if it was it's own individual flowcell.</p>
+<p>This method can also trim fastq, and sequencing_summary files when using the <strong>paf</strong> or <strong>flat</strong> methods. By using the prefix option, you can label the output names, otherwise generic defaults will be used.</p>
+<h2 id="batch_taterpy">batch_tater.py</h2>
+<p><em>Potato scripting engaged</em></p>
+<p>This is designed to run on the output files from <code>fast5_fetcher.py</code> using option <code>-z</code>. This writes out file lists for each tarball that contains reads you want to process. Then <code>batch_tater.py</code> can read those files, to open the individual tar files, and extract the files, meaning the file is only opened once.</p>
+<p>A recent test using the -z option on ~2.2Tb of data, across ~11/27 million files took about 10min (1CPU) to write and organise the file lists with fast5_fetch.py, and about 20s per array job to extract and repackage with batch_tater.py.</p>
+<p>This is best used when you want to do something all at once and filter your reads. Other approaches may be better when you are demultiplexing.</p>
+<h4 id="usage">Usage:</h4>
+<p>Run on SGE using array jobs as a hacky way of doing multiprocessing.
+Also, helps check when things go wrong, and easy to relaunch failed jobs.</p>
+<h4 id="batchsge">batch.sge</h4>
+<pre><code class="bash">source ~/work/venv2714/bin/activate
+
+FILE=$(ls ./fast5/ | sed -n ${SGE_TASK_ID}p)
+BLAH=fast5/${FILE}
+
+mkdir ${TMPDIR}/fast5
+
+time python batch_tater.py tater_master.txt ${BLAH} ${TMPDIR}/fast5/
+
+echo &quot;size of files:&quot; &gt;&amp;2
+du -shc ${TMPDIR}/fast5/ &gt;&amp;2
+echo &quot;extraction complete!&quot; &gt;&amp;2
+echo &quot;Number of files:&quot; &gt;&amp;2
+ls ${TMPDIR}/fast5/ | wc -l &gt;&amp;2
+
+echo &quot;copying data...&quot; &gt;&amp;2
+
+tar -cf ${TMPDIR}/batch.${SGE_TASK_ID}.tar --transform='s/.*\///' ${TMPDIR}/fast5/*.fast5
+cp ${TMPDIR}/batch.${SGE_TASK_ID}.tar ./batched_fast5/
+</code></pre>
+
+<h4 id="create-cmd-and-launch">Create CMD and launch</h4>
+<pre><code class="bash">CMD=&quot;qsub -cwd -V -pe smp 1 -N batch -S /bin/bash -t 1-10433 -tc 80 -l mem_requested=20G,h_vmem=20G,tmp_requested=200G ../batch.sge&quot;
+
+echo $CMD &amp;&amp; $CMD
+</code></pre>
               
             </div>
           </div>

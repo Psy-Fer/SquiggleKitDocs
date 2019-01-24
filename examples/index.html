@@ -141,11 +141,65 @@
             <div class="section">
               
                 <h1 id="examples">Examples</h1>
-<h4 id="barcode-experiment-partitioning-with-fast5_fetcher">Barcode experiment partitioning with fast5_fetcher</h4>
-<h4 id="raw-signal-extraction-for-analysis">Raw signal extraction for analysis</h4>
-<h4 id="stall-detection-in-raw-data">Stall detection in raw data</h4>
-<h4 id="nanopore-adapter-detection-in-raw-data">Nanopore Adapter detection in raw data</h4>
-<h4 id="pipelines">Pipelines</h4>
+<p>The tools can be used in a variety of ways using different wrapping techniques. I have provided a few examples here.</p>
+<h2 id="barcode-experiment-partitioning-with-fast5_fetcher">Barcode experiment partitioning with fast5_fetcher</h2>
+<p>Fast5 Fetcher was originally built to work with <strong>Sun Grid Engine</strong> (SGE), exploiting the heck out of array jobs. Although it can work locally and on untarred file structures, when operating on multiple sequencing experiments, with file structures scattered across a file system, is when fast5 fetcher starts to make a difference.</p>
+<h3 id="sge-examples">SGE examples</h3>
+<p>After creating the fastq/paf/flat, sequencing_summary, and index files, create an SGE file.</p>
+<p>Note the use of <code>${SGE_TASK_ID}</code> to use the array job as the pointer to a particular file</p>
+<h4 id="after-barcode-demultiplexing">After barcode demultiplexing</h4>
+<p>Given a similar structure and naming convention, it is possible to group the fast5 files by barcode in the following manner.</p>
+<pre><code>├── BC_1.fastq.gz                # Barcode 1
+├── BC_2.fastq.gz                # Barcode 2
+├── BC_3.fastq.gz                # ...
+├── BC_4.fastq.gz          
+├── BC_5.fastq.gz            
+├── BC_6.fastq.gz           
+├── BC_7.fastq.gz           
+├── BC_8.fastq.gz           
+├── BC_9.fastq.gz           
+├── BC_10.fastq.gz           
+├── BC_11.fastq.gz            
+├── BC_12.fastq.gz            
+├── unclassified.fastq.gz        # unclassified reads (skipped by fast5_fetcher in this example, rename BC_13 to simple fold it into the example)        
+├── sequencing_summary.txt.gz    # gzipped
+├── barcoded.index.gz            # index file containing fast5 file paths
+├── fast5/                       # fast5 folder, unsorted
+|    ├── 1.tar                   # each tar contains ~4000 fast5 files
+|    └── 2.tar
+|    └── 3.tar
+|    └── ...
+</code></pre>
+<h4 id="fetchsge">fetch.sge</h4>
+<pre><code class="bash"># activate virtual python environment
+# most HPC will use something like &quot;module load&quot;
+source ~/work/venv2714/bin/activate
+
+# Creaete output directory to take advantage of NVME drives on cluster local
+mkdir ${TMPDIR}/fast5
+
+# Run fast_fetcher on each barcode after demultiplexing
+time python fast5_fetcher.py -r ./BC_${SGE_TASK_ID}.fastq.gz -s sequencing_summary.txt.gz -i barcoded.index.gz -o ${TMPDIR}/fast5/
+
+# tarball the extracted reads into a single tar file
+# Can also split the reads into groups of ~4000 if needed
+tar -cf ${TMPDIR}/BC_${SGE_TASK_ID}_fast5.tar --transform='s/.*\///' ${TMPDIR}/fast5/*.fast5
+# Copy from HPC drives to working dir.
+cp ${TMPDIR}/BC_${SGE_TASK_ID}_fast5.tar ./
+</code></pre>
+
+<h4 id="create-cmd-and-launch">Create CMD and launch</h4>
+<pre><code class="bash"># current working dir, with 1 CPU, array jobs 1 to 12
+# Modify memory settings as required
+CMD=&quot;qsub -cwd -V -pe smp 1 -N F5F -S /bin/bash -t 1-12 -l mem_requested=20G,h_vmem=20G,tmp_requested=500G ./fetch.sge&quot;
+
+echo $CMD &amp;&amp; $CMD
+</code></pre>
+
+<h2 id="raw-signal-extraction-for-analysis">Raw signal extraction for analysis</h2>
+<h2 id="stall-detection-in-raw-data">Stall detection in raw data</h2>
+<h2 id="nanopore-adapter-detection-in-raw-data">Nanopore Adapter detection in raw data</h2>
+<h2 id="pipelines">Pipelines</h2>
               
             </div>
           </div>

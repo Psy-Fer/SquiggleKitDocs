@@ -60,6 +60,23 @@
             
     <li class="toctree-l2"><a href="#overview">Overview</a></li>
     
+        <ul>
+        
+            <li><a class="toctree-l3" href="#todo-do-this-for-all-tools-not-just-f5f">TODO: Do this for all tools, not just f5f</a></li>
+        
+        </ul>
+    
+
+    <li class="toctree-l2"><a href="#getting-started">Getting Started</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#file-structures">File structures</a></li>
+        
+            <li><a class="toctree-l3" href="#inputs">Inputs</a></li>
+        
+        </ul>
+    
 
     </ul>
 	    </li>
@@ -127,6 +144,125 @@
             <div class="section">
               
                 <h1 id="overview">Overview</h1>
+<h3 id="todo-do-this-for-all-tools-not-just-f5f">TODO: Do this for all tools, not just f5f</h3>
+<p>There is one catch. Everything is written primarily for use with <strong>Linux</strong>. Due to <strong>MacOS</strong> running on Unix, so long as the GNU tools are installed (see below), there should be minimal issues running it. <strong>Windows 10</strong> however may require more massaging to work with the new Linux integration.</p>
+<h1 id="getting-started">Getting Started</h1>
+<p>Building an index of fast5 files and their paths, as well as a simple bash script to control the workflow, be it on a local machine, or HPC, will depend on the starting file structure.</p>
+<h2 id="file-structures">File structures</h2>
+<p>The file structure is not overly important, however it will modify some of the commands used in the examples. I have endeavoured to include a few diverse uses, starting from different file states, but of course, I can't think of everything, so if there is something you wish to accomplished with <code>fast5_fetcher.py</code>, but can't quite get it to work for you, let me know, and perhaps I can make it easier for you.</p>
+<h4 id="1-raw-structure-not-preferred">1. Raw structure (not preferred)</h4>
+<p>This is the most basic structure, where all files are present in an accessible state.</p>
+<pre><code>├── huntsman.fastq
+├── sequencing_summary.txt       
+├── huntsman_reads/              # Read folder
+│   ├── 0/                       # individual folders containing ~4000 fast5s
+|   |   ├── huntsman_read1.fast5
+|   |   └── huntsman_read2.fast5
+|   |   └── ...
+|   ├── 1/
+|   |   ├── huntsman_read#.fast5
+|   |   └── ...
+└── ├── ...
+</code></pre>
+<h4 id="2-local-basecalled-structure">2. Local basecalled structure</h4>
+<p>This structure is the typical structure post local basecalling
+fastq and sequencing_summary files have been gzipped and the folders in the reads folder have been tarballed into one large file</p>
+<pre><code>├── huntsman.fastq.gz            # gzipped
+├── sequencing_summary.txt.gz    # gzipped
+├── huntsman_reads.tar           # Tarballed read folder
+    |                            # Tarball expanded
+    |--&gt;│   ├── 0/               # individual folders inside tarball
+        |   |   ├── huntsman_read1.fast5
+        |   |   └── huntsman_read2.fast5
+        |   |   └── ...
+        |   ├── 1/
+        |   |   ├── huntsman_read#.fast5
+        |   |   └── ...
+        └── ├── ...
+</code></pre>
+<h4 id="3-parallel-basecalled-structure">3. Parallel basecalled structure</h4>
+<p>This structure is post massively parallel basecalling, and looks like multiples of the above structure.</p>
+<pre><code>├── fastq/
+|   ├── huntsman.1.fastq.gz
+|   └── huntsman.2.fastq.gz
+|   └── huntsman.3.fastq.gz
+|   └── ...
+├── logs/
+|    ├── sequencing_summary.1.txt.gz
+|    └── sequencing_summary.2.txt.gz
+|    └── sequencing_summary.3.txt.gz
+|    └── ...
+├── fast5/
+|    ├── 1.tar
+|    └── 2.tar
+|    └── 3.tar
+|    └── ...
+</code></pre>
+<p>With this structure, combining the <code>.fastq</code> and <code>sequencing_summary.txt.gz</code> files is needed.</p>
+<h5 id="combine-fastqgz-files">Combine fastq.gz files</h5>
+<pre><code class="bash">for file in fastq/*.fastq.gz; do cat $file; done &gt;&gt; huntsman.fastq.gz
+</code></pre>
+
+<h5 id="combine-sequencing_summarytxtgz-files">Combine sequencing_summary.txt.gz files</h5>
+<pre><code class="bash"># create header
+zcat $(ls logs/sequencing_summary*.txt.gz | head -1) | head -1 &gt; sequencing_summary.txt
+
+# combine all files, skipping first line header
+for file in logs/sequencing_summary*.txt.gz; do zcat $file | tail -n +2; done &gt;&gt; sequencing_summary.txt
+
+gzip sequencing_summary.txt
+</code></pre>
+
+<p>You should then have something like this:</p>
+<pre><code>├── huntsman.fastq.gz            # gzipped
+├── sequencing_summary.txt.gz    # gzipped
+├── fast5/                       # fast5 folder
+|    ├── 1.tar                   # each tar contains ~4000 fast5 files
+|    └── 2.tar
+|    └── 3.tar
+|    └── ...
+</code></pre>
+<h2 id="inputs">Inputs</h2>
+<p>It takes 3 files as input:</p>
+<ol>
+<li>fastq, paf, or flat (.gz)</li>
+<li>sequencing_summary.txt(.gz)</li>
+<li>name.index(.gz)</li>
+</ol>
+<h4 id="1-fastq-paf-or-flat">1. fastq, paf, or flat</h4>
+<p>This is where the readIDs are collected, to be matched with their respective fast5 files for fetching. The idea being, that some form of selection has occurred to generate the files.</p>
+<p>In the case of a <strong>fastq</strong>, it may be filtered for all the reads above a certain quality, or from a particular barcode after running barcode detection.</p>
+<p>For the <strong>paf</strong> file, it is an alignment output of minimap2. This can be used to fetch only the fast5 files that align to some reference, or has been filtered to only contain the reads that align to a particular region of interest.</p>
+<p>A <strong>flat</strong> file in this case is just a file that contains a list of readIDs, one on each line. This allows the user to generate any list of reads to fetch from any other desired method.</p>
+<p>Each of these files can be gzipped or not.</p>
+<p>See examples below for example test cases.</p>
+<h4 id="2-sequencing-summary">2. Sequencing summary</h4>
+<p>The <code>sequencing_summary.txt</code> file is created by the basecalling software, (Albacore, Guppy), and contains information about each read, including the readID and fast5 file name, along with length, quality scores, and potentially barcode information.</p>
+<p>There is a shortcut method in which you can use the <code>sequencing_summary.txt</code> only, without the need for a fastq, paf, or flat file. In this case, leave the <code>-q</code>, <code>-f</code>, <code>-r</code> fields empty.</p>
+<p>This file can be gzipped or not.</p>
+<h4 id="3-building-the-index">3. Building the index</h4>
+<p>How the index is built depends on which file structure you are using. It will work with both tarred and un-tarred file structures. Tarred is preferred.</p>
+<h5 id="-raw-structure-not-preferred">- Raw structure (not preferred)</h5>
+<pre><code class="bash">for file in $(pwd)/reads/*/*;do echo $file; done &gt;&gt; name.index
+
+gzip name.index
+</code></pre>
+
+<h5 id="-local-basecalled-structure">- Local basecalled structure</h5>
+<pre><code class="bash">for file in $(pwd)/reads.tar; do echo $file; tar -tf $file; done &gt;&gt; name.index
+
+gzip name.index
+</code></pre>
+
+<h5 id="-parallel-basecalled-structure">- Parallel basecalled structure</h5>
+<pre><code class="bash">for file in $(pwd)/fast5/*fast5.tar; do echo $file; tar -tf $file; done &gt;&gt; name.index
+</code></pre>
+
+<p>If you have multiple experiments, then cat them all together and gzip.</p>
+<pre><code class="bash">for file in ./*.index; do cat $file; done &gt;&gt; ../all.name.index
+
+gzip all.name.index
+</code></pre>
               
             </div>
           </div>

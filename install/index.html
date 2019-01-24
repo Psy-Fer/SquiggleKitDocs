@@ -65,6 +65,16 @@
             
     <li class="toctree-l2"><a href="#installation">Installation</a></li>
     
+        <ul>
+        
+            <li><a class="toctree-l3" href="#requirements">Requirements</a></li>
+        
+            <li><a class="toctree-l3" href="#install">Install</a></li>
+        
+            <li><a class="toctree-l3" href="#quick-start">Quick start</a></li>
+        
+        </ul>
+    
 
     </ul>
 	    </li>
@@ -127,7 +137,51 @@
             <div class="section">
               
                 <h1 id="installation">Installation</h1>
-<p>this is how you install it</p>
+<h3 id="requirements">Requirements</h3>
+<p>Following a self imposed guideline, most things written to handle nanopore data or bioinformatics in general, will use as little 3rd party libraries as possible, aiming for only core libraries, or have all included files in the package.</p>
+<p>In the case of <code>fast5_fetcher.py</code> and <code>batch_tater.py</code>, only core python libraries are used. So as long as <strong>Python 2.7+</strong> is present, everything should work with no extra steps. (Python 3 compatibility is coming in the next big update)</p>
+<h3 id="install">Install</h3>
+<pre><code>git clone https://github.com/Psy-Fer/SquiggleKit.git
+</code></pre>
+<h2 id="quick-start">Quick start</h2>
+<h4 id="fast5_fetcher">fast5_fetcher</h4>
+<p>If using MacOS, and NOT using homebrew, install it here:</p>
+<p><a href="https://brew.sh/"><strong>homebrew installation instructions</strong></a></p>
+<p>then install gnu-tar with:</p>
+<pre><code>brew install gnu-tar
+</code></pre>
+<h5 id="basic-use-on-a-local-computer">Basic use on a local computer</h5>
+<p><strong>fastq</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -q my.fastq.gz -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<p><strong>paf</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -p my.paf -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<p><strong>flat</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -f my_flat.txt.gz -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<p><strong>sequencing_summary.txt only</strong></p>
+<pre><code class="bash">python fast5_fetcher.py -s sequencing_summary.txt.gz -i name.index.gz -o ./fast5
+</code></pre>
+
+<h4 id="squigglepull">SquigglePull</h4>
+<p><strong>All raw data:</strong></p>
+<pre><code>python SquigglePull.py -rv -p ~/data/test/reads/1/ -f all &gt; data.tsv
+</code></pre>
+<p><strong>Positional event data:</strong></p>
+<pre><code>python SquigglePull.py -ev -p ./test/ -t 50,150 -f pos1 &gt; data.tsv
+</code></pre>
+<h4 id="segmenter">segmenter</h4>
+<p><strong>Stall identification</strong></p>
+<pre><code>python segmenter.py -s signals.tsv.gz -ku -j 100 &gt; signals_stall_segments.tsv
+</code></pre>
+<h4 id="motifseq">MotifSeq</h4>
+<p><strong>Nanopore adapter identification</strong></p>
+<pre><code>python sigtools.py -s signals.tsv.gz --segs signals_stall_segments.tsv -a adapter.model -t 120 -d 120 &gt; signals_adapters.tsv
+</code></pre>
               
             </div>
           </div>
