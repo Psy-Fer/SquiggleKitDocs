@@ -139,7 +139,48 @@
                 <h1 id="installation">Installation</h1>
 <h3 id="requirements">Requirements</h3>
 <p>Following a self imposed guideline, most things written to handle nanopore data or bioinformatics in general, will use as little 3rd party libraries as possible, aiming for only core libraries, or have all included files in the package.</p>
-<p>In the case of <code>fast5_fetcher.py</code> and <code>batch_tater.py</code>, only core python libraries are used. So as long as <strong>Python 2.7+</strong> is present, everything should work with no extra steps. (Python 3 compatibility is coming in the next big update)</p>
+<p>In the case of <code>fast5_fetcher.py</code> and <code>batch_tater.py</code>, only core python libraries are used. So as long as <strong>Python 2.7+</strong> is present, everything should work with no extra steps.</p>
+<h4 id="full-requirements">Full requirements</h4>
+<p><code>fast5_fetcher,py</code>:</p>
+<ul>
+<li>core python libraries</li>
+</ul>
+<p><code>SquigglePull.py</code>:</p>
+<ul>
+<li>numpy</li>
+<li>h5py</li>
+<li>sklearn</li>
+</ul>
+<pre><code>pip install numpy h5py sklearn
+</code></pre>
+
+<p><code>segmenter.py</code>:</p>
+<ul>
+<li>numpy</li>
+<li>matplotlib</li>
+<li>h5py</li>
+<li>sklearn</li>
+</ul>
+<pre><code>pip install numpy h5py sklearn matplotlib
+</code></pre>
+
+<p><code>MotifSeq.py</code>:</p>
+<ul>
+<li>numpy</li>
+<li>h5py</li>
+<li>sklearn</li>
+<li>matplotlib</li>
+<li>mlpy 3.5.0 (don't use pip for this)</li>
+</ul>
+<pre><code>pip install numpy h5py sklearn matplotlib
+</code></pre>
+
+<h4 id="installing-mlpy">Installing mlpy:</h4>
+<ul>
+<li>Download the <a href="https://sourceforge.net/projects/mlpy/files/">Files</a></li>
+<li>Install <a href="http://mlpy.sourceforge.net/docs/3.5/install.html">Instructions</a></li>
+</ul>
+<p>There is one catch. Everything is written primarily for use with <strong>Linux</strong>. Due to <strong>MacOS</strong> running on Unix, so long as the GNU tools are installed (see below), there should be minimal issues running it. <strong>Windows</strong> however may require more massaging.</p>
 <h3 id="install">Install</h3>
 <pre><code>git clone https://github.com/Psy-Fer/SquiggleKit.git
 </code></pre>

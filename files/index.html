@@ -60,12 +60,6 @@
             
     <li class="toctree-l2"><a href="#overview">Overview</a></li>
     
-        <ul>
-        
-            <li><a class="toctree-l3" href="#todo-do-this-for-all-tools-not-just-f5f">TODO: Do this for all tools, not just f5f</a></li>
-        
-        </ul>
-    
 
     <li class="toctree-l2"><a href="#getting-started">Getting Started</a></li>
     
@@ -144,12 +138,12 @@
             <div class="section">
               
                 <h1 id="overview">Overview</h1>
-<h3 id="todo-do-this-for-all-tools-not-just-f5f">TODO: Do this for all tools, not just f5f</h3>
-<p>There is one catch. Everything is written primarily for use with <strong>Linux</strong>. Due to <strong>MacOS</strong> running on Unix, so long as the GNU tools are installed (see below), there should be minimal issues running it. <strong>Windows 10</strong> however may require more massaging to work with the new Linux integration.</p>
+<p>Most files and formats are straightforward. The only tricky starting point is <code>fast5_fetcher.py</code>.
+This becomes even more important if using something like <code>batch_tater.py</code> with SGE to significantly reduce the time taken to run. Once processing more than 50k files, the <code>batch_tater.py</code> method becomes very attractive.</p>
 <h1 id="getting-started">Getting Started</h1>
 <p>Building an index of fast5 files and their paths, as well as a simple bash script to control the workflow, be it on a local machine, or HPC, will depend on the starting file structure.</p>
 <h2 id="file-structures">File structures</h2>
-<p>The file structure is not overly important, however it will modify some of the commands used in the examples. I have endeavoured to include a few diverse uses, starting from different file states, but of course, I can't think of everything, so if there is something you wish to accomplished with <code>fast5_fetcher.py</code>, but can't quite get it to work for you, let me know, and perhaps I can make it easier for you.</p>
+<p>The file structure is not overly important, however it will modify some of the commands used in the examples. I have endeavoured to include a few diverse uses, starting from different file states, but of course, I can't think of everything, so if there is something you wish to accomplished with <code>fast5_fetcher.py</code>, but can't quite get it to work for you, let me know, and we can try to work it out.</p>
 <h4 id="1-raw-structure-not-preferred">1. Raw structure (not preferred)</h4>
 <p>This is the most basic structure, where all files are present in an accessible state.</p>
 <pre><code>├── huntsman.fastq
@@ -223,7 +217,7 @@ gzip sequencing_summary.txt
 |    └── ...
 </code></pre>
 <h2 id="inputs">Inputs</h2>
-<p>It takes 3 files as input:</p>
+<p><code>fast5_fetcher.py</code> takes 3 files as input:</p>
 <ol>
 <li>fastq, paf, or flat (.gz)</li>
 <li>sequencing_summary.txt(.gz)</li>
@@ -232,10 +226,9 @@ gzip sequencing_summary.txt
 <h4 id="1-fastq-paf-or-flat">1. fastq, paf, or flat</h4>
 <p>This is where the readIDs are collected, to be matched with their respective fast5 files for fetching. The idea being, that some form of selection has occurred to generate the files.</p>
 <p>In the case of a <strong>fastq</strong>, it may be filtered for all the reads above a certain quality, or from a particular barcode after running barcode detection.</p>
-<p>For the <strong>paf</strong> file, it is an alignment output of minimap2. This can be used to fetch only the fast5 files that align to some reference, or has been filtered to only contain the reads that align to a particular region of interest.</p>
-<p>A <strong>flat</strong> file in this case is just a file that contains a list of readIDs, one on each line. This allows the user to generate any list of reads to fetch from any other desired method.</p>
+<p>For the <strong>paf</strong> file, it is an alignment output of <a href="https://github.com/lh3/minimap2">minimap2</a>. This can be used to fetch only the fast5 files that align to some reference, or has been filtered to only contain the reads that align to a particular region of interest.</p>
+<p>A <strong>flat</strong> file in this case is a file that contains a list of readIDs, one on each line. This allows the user to generate any list of reads to fetch from any other desired method.</p>
 <p>Each of these files can be gzipped or not.</p>
-<p>See examples below for example test cases.</p>
 <h4 id="2-sequencing-summary">2. Sequencing summary</h4>
 <p>The <code>sequencing_summary.txt</code> file is created by the basecalling software, (Albacore, Guppy), and contains information about each read, including the readID and fast5 file name, along with length, quality scores, and potentially barcode information.</p>
 <p>There is a shortcut method in which you can use the <code>sequencing_summary.txt</code> only, without the need for a fastq, paf, or flat file. In this case, leave the <code>-q</code>, <code>-f</code>, <code>-r</code> fields empty.</p>
