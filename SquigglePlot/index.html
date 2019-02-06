@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>segmenter - SquiggleKit Docs</title>
+  <title>SquigglePlot - SquiggleKit Docs</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,8 +17,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "segmenter";
-    var mkdocs_page_input_path = "segmenter.md";
+    var mkdocs_page_name = "SquigglePlot";
+    var mkdocs_page_input_path = "SquigglePlot.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -73,17 +73,12 @@
     <a class="" href="../SquigglePull/">SquigglePull</a>
 	    </li>
           
-            <li class="toctree-l1">
-		
-    <a class="" href="../SquigglePlot/">SquigglePlot</a>
-	    </li>
-          
             <li class="toctree-l1 current">
 		
-    <a class="current" href="./">segmenter</a>
+    <a class="current" href="./">SquigglePlot</a>
     <ul class="subnav">
             
-    <li class="toctree-l2"><a href="#segmenter">Segmenter</a></li>
+    <li class="toctree-l2"><a href="#squiggleplot">SquigglePlot</a></li>
     
 
     <li class="toctree-l2"><a href="#background">Background</a></li>
@@ -102,6 +97,11 @@
     
 
     </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../segmenter/">segmenter</a>
 	    </li>
           
             <li class="toctree-l1">
@@ -136,7 +136,7 @@
     
       
     
-    <li>segmenter</li>
+    <li>SquigglePlot</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -146,13 +146,60 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="segmenter">Segmenter</h1>
+                <h1 id="squiggleplot">SquigglePlot</h1>
 <h1 id="background">Background</h1>
-<p>Nanopore signal can have larger structurally identifiable regions. These regions can be separated into 3 categories: Stall, homopolymer, regular DNA/cDNA sequence. Identifying the stall at the start of a nanopore read allows for extraction, visualisation, and comparison of the regular sequence. Finding homopolymer sequences can aid in identifying full lenght cDNA reads, or breaking up contatonated reads. Using segmenter in conjunction with MotifSeq allows for simple targeting within the raw signal. Selected regions can then be, for example, used as input to various classical comparison methods, such as Dynamic Time Warping (DTW), or used as training sets for Machine/Deep Learning techniques.</p>
+<p>When working with signal level data, generating a simple visualisation to help understand the structural breakdown of a nanopore read, or to simply creating a nice figure, and easy to use, multiple format, plotting script is needed. <strong>SquigglePlot</strong> allows for visualising sections of the signal, as well as implements some simple scaling to clean up hi/low noise, save in multiple formats (pdf, png, etc), and set the DPI  of the save file for publications or posters.</p>
 <h1 id="getting-started">Getting Started</h1>
+<p><strong>SquigglePlot</strong> acts as a wrapper for matplotlib in python. Extract your signal with <strong>SquigglePull</strong> or point it at some fast5 files.</p>
 <h1 id="instructions-for-use">Instructions for use</h1>
+<p>Provide a top folder path <code>-p</code>, a signal file from <code>SquigglePull.py</code> <code>-s</code>, or an individual fast5 file<code>-i</code>, and <strong>SquigglePlot</strong> will plot the raw signal for you.</p>
 <h1 id="quick-start">Quick start</h1>
+<p><strong>Individual File full signal</strong></p>
+<pre><code>python SquigglePlot.py -i ~/data/test.fast5
+</code></pre>
+<p><img alt="Individual plot default values" src="../img/test.fast5_dpi_150_test_2.png" /></p>
+<p><strong>Plot first 2000 data points of each read from signal file and save at 300dpi pdf</strong>*</p>
+<pre><code>python SquigglePlot.py -s signals.tsv.gz --plot_colour teal -n 2000 --dpi 300 --no_show o--save test.pdf --save_path ./test/plots/
+</code></pre>
+<p><strong>Plot all from top folder in green</strong></p>
+<pre><code>python SquigglePlot.py -p ~/data/ --plot_colour -g
+</code></pre>
+<p><strong>Plot between 2 values in pink</strong></p>
+<pre><code>python SquigglePlot.py -i ~/data/test.fast5 --plot_colour pink -n 400,1600
+</code></pre>
+<p><img alt="Plot between 2 values in pink" src="../img/test.fast5_dpi_150_test.png" /></p>
 <h1 id="full-usage">Full usage</h1>
+<pre><code class="bash">usage: SquigglePlot.py [-h] [-f F5F | -p F5_PATH | -s SIGNAL | -i IND]
+                       [--head] [-n NUM] [--scale_hi SCALE_HI]
+                       [--scale_low SCALE_LOW] [--plot_colour PLOT_COLOUR]
+                       [--save SAVE] [--save_path SAVE_PATH] [--no_show]
+                       [--dpi DPI]
+
+script name - script description
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f F5F, --f5f F5F     File list of fast5 paths
+  -p F5_PATH, --f5_path F5_PATH
+                        Fast5 top dir
+  -s SIGNAL, --signal SIGNAL
+                        Extracted signal file from SquigglePull
+  -i IND, --ind IND     Individual fast5 file
+  --head                Header present in signal or flat file
+  -n NUM, --Num NUM     Section of signal to look at - -n 2000 or -n 100,1500
+  --scale_hi SCALE_HI   Upper limit for signal outlier scaling
+  --scale_low SCALE_LOW
+                        Lower limit for signal outlier scaling
+  --plot_colour PLOT_COLOUR
+                        Colour of signal plot, takes any pyplot entry:
+                        k,r,b,g,red,blue,etc...
+  --save SAVE           Save file readname_saveArg.pdf --save saveArg.pdf, use
+                        png, etc for other file types
+  --save_path SAVE_PATH
+                        Save filepath
+  --no_show             Do not show plot (used for saving many)
+  --dpi DPI             Change DPI for publication figs, eg: --dpi 300
+</code></pre>
               
             </div>
           </div>
@@ -160,10 +207,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../MotifSeq/" class="btn btn-neutral float-right" title="MotifSeq">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../segmenter/" class="btn btn-neutral float-right" title="segmenter">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../SquigglePlot/" class="btn btn-neutral" title="SquigglePlot"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../SquigglePull/" class="btn btn-neutral" title="SquigglePull"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -189,10 +236,10 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../SquigglePlot/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../SquigglePull/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../MotifSeq/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../segmenter/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

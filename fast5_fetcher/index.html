@@ -109,6 +109,11 @@
           
             <li class="toctree-l1">
 		
+    <a class="" href="../SquigglePlot/">SquigglePlot</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
     <a class="" href="../segmenter/">segmenter</a>
 	    </li>
           
@@ -160,6 +165,7 @@
 <h1 id="background">Background</h1>
 <p>Reducing the number of fast5 files per folder in a single experiment was a welcomed addition to MinKnow. However this also made it rather useful for manual basecalling on a cluster, using array jobs, where each folder is basecalled individually, producing its own <code>sequencing_summary.txt</code>, <code>reads.fastq</code>, and reads folder containing the newly basecalled fast5s. Taring those fast5 files up into a single file was needed to keep the sys admins at bay, complaining about our millions of individual files on their drives. This meant, whenever there was a need to use the fast5 files from an experiment, or many experiments, unpacking the fast5 files was a significant hurdle both in time and disk space.</p>
 <p><strong>fast5_fetcher</strong> was built to  address this bottleneck. By building an index file of the tarballs, and using the <code>sequencing_summary.txt</code> file to match readIDs with fast5 filenames, only the fast5 files you need can be  extracted, either temporarily in a pipeline, or permanently, reducing space and simplifying downstream work flows.</p>
+<p><img alt="Image demonstrating fast5_fetcher" src="../img/fast5_fetcher_fig.jpg" /></p>
 <h1 id="getting-started">Getting Started</h1>
 <p>Building an index of fast5 files and their paths, as well as a simple bash script to control the workflow, be it on a local machine, or HPC, will depend on the starting file structure.</p>
 <h2 id="file-structures">File structures</h2>

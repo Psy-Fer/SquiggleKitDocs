@@ -63,7 +63,7 @@
     <a class="current" href="./">Installation</a>
     <ul class="subnav">
             
-    <li class="toctree-l2"><a href="#installation">Installation</a></li>
+    <li class="toctree-l2"><a href="#installation9856">Installation9856</a></li>
     
         <ul>
         
@@ -87,6 +87,11 @@
             <li class="toctree-l1">
 		
     <a class="" href="../SquigglePull/">SquigglePull</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../SquigglePlot/">SquigglePlot</a>
 	    </li>
           
             <li class="toctree-l1">
@@ -136,7 +141,7 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="installation">Installation</h1>
+                <h1 id="installation9856">Installation9856</h1>
 <h3 id="requirements">Requirements</h3>
 <p>Following a self imposed guideline, most things written to handle nanopore data or bioinformatics in general, will use as little 3rd party libraries as possible, aiming for only core libraries, or have all included files in the package.</p>
 <p>In the case of <code>fast5_fetcher.py</code> and <code>batch_tater.py</code>, only core python libraries are used. So as long as <strong>Python 2.7+</strong> is present, everything should work with no extra steps.</p>
@@ -152,6 +157,15 @@
 <li>sklearn</li>
 </ul>
 <pre><code>pip install numpy h5py sklearn
+</code></pre>
+
+<p><code>SquigglePlot.py</code>:</p>
+<ul>
+<li>numpy</li>
+<li>matplotlib</li>
+<li>h5py</li>
+</ul>
+<pre><code>pip install numpy h5py matplotlib
 </code></pre>
 
 <p><code>segmenter.py</code>:</p>
@@ -214,6 +228,16 @@
 </code></pre>
 <p><strong>Positional event data:</strong></p>
 <pre><code>python SquigglePull.py -ev -p ./test/ -t 50,150 -f pos1 &gt; data.tsv
+</code></pre>
+<h4 id="squiggleplot">SquigglePlot</h4>
+<p><strong>Individual File full signal</strong></p>
+<pre><code>python SquigglePlot.py -i ~/data/test.fast5
+</code></pre>
+<p><strong>Plot all from top folder in green</strong></p>
+<pre><code>python SquigglePlot.py -p ~/data/ --plot_colour -g
+</code></pre>
+<p><strong>Plot first 2000 data points of each read from signal file and save at 300dpi pdf</strong>*</p>
+<pre><code>python SquigglePlot.py -s signals.tsv.gz --plot_colour teal -n 2000 --dpi 300 --no_show o--save test.pdf --save_path ./test/plots/
 </code></pre>
 <h4 id="segmenter">segmenter</h4>
 <p><strong>Stall identification</strong></p>
