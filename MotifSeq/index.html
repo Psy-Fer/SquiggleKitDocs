@@ -91,6 +91,18 @@
     <li class="toctree-l2"><a href="#motifseq">MotifSeq</a></li>
     
 
+    <li class="toctree-l2"><a href="#background">Background</a></li>
+    
+
+    <li class="toctree-l2"><a href="#getting-started">Getting Started</a></li>
+    
+
+    <li class="toctree-l2"><a href="#instructions-for-use">Instructions for use</a></li>
+    
+
+    <li class="toctree-l2"><a href="#full-usage">Full usage</a></li>
+    
+
     </ul>
 	    </li>
           
@@ -132,8 +144,57 @@
             <div class="section">
               
                 <h1 id="motifseq">MotifSeq</h1>
-<p>MotifSeq docs</p>
+<h1 id="background">Background</h1>
+<p><strong>MotifSeq</strong>, the <code>ctrl+f</code> for signal, identifies raw signal traces that correspond to a given nucleotide sequence, such as an adapter, barcode or motif of interest. MotifSeq takes a query nucleotide sequence as input, converts it to a normalised signal trace using Scrappie, then performs a signal-level local alignment using a dynamic programming algorithm. MotifSeq outputs the location of a matching target in the raw signal with an associated distance value.</p>
 <p><img alt="Image demonstrating barcode identification using MotifSeq" src="../img/MotifSeq_fig.jpg" /></p>
+<h1 id="getting-started">Getting Started</h1>
+<p><strong>MotifSeq</strong> requires an input signal, either extracted from another read, or by using something such as Scrappie.
+Use the built in visualisation <code>-v</code> for help in parameter tuning.</p>
+<h1 id="instructions-for-use">Instructions for use</h1>
+<p><strong>Nanopore adapter identification</strong></p>
+<p>Building an adapter model:</p>
+<pre><code>scrappie squiggle adapter.fa &gt; adapter.model
+</code></pre>
+<p>Identify stalls in signal using segmenter:</p>
+<pre><code>python segmenter.py -s signals.tsv.gz -ku -j 100 &gt; signals_stall_segments.tsv
+</code></pre>
+<p>Identifying nanopore adapters in signal up stream of identified stalls:</p>
+<pre><code>python MotifSeq.py -s signals.tsv.gz --segs signals_stall_segments.tsv -a adapter.model &gt; signals_adapters.tsv
+</code></pre>
+<h1 id="full-usage">Full usage</h1>
+<pre><code class="bash">usage: MotifSeq.py [-h] [-f F5F | -p F5_PATH | -s SIGNAL] [-a ADAPT]
+                   [-m MODELS] [--segs SEGS] [-b BAITS] [-t DTW_THRESH]
+                   [-d MOTIF_DIST] [-v] [-scale_hi SCALE_HI]
+                   [-scale_low SCALE_LOW]
+
+MotifSeq - the Ctrl+f for signal. Signal-level local alignment of sequence
+motifs.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f F5F, --f5f F5F     File list of fast5 paths
+  -p F5_PATH, --f5_path F5_PATH
+                        Fast5 top dir
+  -s SIGNAL, --signal SIGNAL
+                        Extracted signal file from SquigglePull
+  -a ADAPT, --adapt ADAPT
+                        Adapter model file
+  -m MODELS, --models MODELS
+                        Barcode models file
+  --segs SEGS           segmenter file
+  -b BAITS, --baits BAITS
+                        signal bait file
+  -t DTW_THRESH, --dtw_thresh DTW_THRESH
+                        DTW distance threshold for match
+  -d MOTIF_DIST, --motif_dist MOTIF_DIST
+                        max distance of adapter from start of signal
+  -v, --view            view each output
+  -scale_hi SCALE_HI, --scale_hi SCALE_HI
+                        Upper limit for signal outlier scaling
+  -scale_low SCALE_LOW, --scale_low SCALE_LOW
+                        Lower limit for signal outlier scaling
+
+</code></pre>
               
             </div>
           </div>

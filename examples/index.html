@@ -202,9 +202,48 @@ echo $CMD &amp;&amp; $CMD
 </code></pre>
 
 <h2 id="raw-signal-extraction-for-analysis">Raw signal extraction for analysis</h2>
+<pre><code>python SquigglePull.py -r -p test/R9_raw_data/ &gt; data.tsv
+</code></pre>
 <h2 id="stall-detection-in-raw-data">Stall detection in raw data</h2>
+<pre><code>python segmenter.py -s signals.tsv.gz -ku -j 100 &gt; signals_stall_segments.tsv
+</code></pre>
 <h2 id="nanopore-adapter-detection-in-raw-data">Nanopore Adapter detection in raw data</h2>
+<pre><code>scrappie squiggle adapter.fa &gt; adapter.model
+python MotifSeq.py -s signals.tsv.gz --segs signals_stall_segments.tsv -a adapter.model &gt; signals_adapters.tsv
+</code></pre>
 <h2 id="pipelines">Pipelines</h2>
+<pre><code class="bash"># activate virtual python environment
+# most HPC will use something like &quot;module load&quot;
+
+F5F=SquiggleKit/fast5_fetcher.py
+SPULL=SquiggleKit/SquigglePull.py
+# Filtered paf file
+PAF=full_length_60_R2_154_2.paf
+SEQ_SUM=LLAAB035083_sequencing_summary.txt
+INDEX=LLAAB035083_fast5.index
+# Fastq for filtering
+FQ=LLAAB035083.fastq.gz
+TMP_STORE=${TMPDIR}/fast5
+
+source ~/venv2714/bin/activate
+
+# Create output directory to take advantage of NVME drives on cluster local
+mkdir ${TMP_STORE}
+
+echo &quot;fetching fast5 files...&quot; &gt;&amp;2
+# Run fast_fetcher on sample after filtering
+time python ${F5F} -p ${PAF} -s ${SEQ_SUM} -i ${INDEX} -o ${TMP_STORE} -t -x R2_154_2 -l ${FQ}
+
+echo &quot;extracting squiggles...&quot; &gt;&amp;2
+# now extract the signals from them with SquigglePull
+time python ${SPULL} -rv -p ${TMP_STORE} -f all &gt; ${TMPDIR}/squigs_R2_154_2.tsv
+
+echo &quot;copying data...&quot; &gt;&amp;2
+# Copy from HPC drives to working dir.
+cp ${TMPDIR}/*R2_154_2* ./
+
+echo &quot;done!&quot; &gt;&amp;2
+</code></pre>
               
             </div>
           </div>
