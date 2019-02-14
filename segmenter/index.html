@@ -100,6 +100,12 @@
 
     <li class="toctree-l2"><a href="#full-usage">Full usage</a></li>
     
+        <ul>
+        
+            <li><a class="toctree-l3" href="#detailed-parameter-descriptions">Detailed Parameter descriptions</a></li>
+        
+        </ul>
+    
 
     </ul>
 	    </li>
@@ -148,7 +154,7 @@
               
                 <h1 id="segmenter">Segmenter</h1>
 <h1 id="background">Background</h1>
-<p>Nanopore signal can have larger structurally identifiable regions. These regions can be separated into 3 categories: Stall, homopolymer, regular DNA/cDNA sequence. Identifying the stall at the start of a nanopore read allows for extraction, visualisation, and comparison of the regular sequence. Finding homopolymer sequences can aid in identifying full lenght cDNA reads, or breaking up contatonated reads. Using segmenter in conjunction with MotifSeq allows for simple targeting within the raw signal. Selected regions can then be, for example, used as input to various classical comparison methods, such as Dynamic Time Warping (DTW), or used as training sets for Machine/Deep Learning techniques.</p>
+<p>Nanopore signal can have larger structurally identifiable regions. These regions can be separated into 3 categories: Stall, homopolymer, and regular DNA/cDNA sequence. Identifying the stall at the start of a nanopore read allows for extraction, visualisation, and comparison of the regular sequence. Finding homopolymer sequences can aid in identifying full lenght cDNA reads, breaking up contatonated reads, or identifying adjacent regions. Using segmenter in conjunction with MotifSeq allows for simple targeting within the raw signal. Selected regions can then be, for example, used as input to various classical comparison methods, such as various types dynamic programming, or used as training sets for Machine/Deep Learning techniques.</p>
 <p>The core algorithm calculates the median of the full read, sets thresholds about the median using a fraction of the standard deviation, and uses a sliding window to find regions of signal which stay inside the threshold region. Error correction and segment merging helps handle the noisy nature of the raw signal data.</p>
 <p>This is a demonstration for analysing raw signal data. The algorithm was developed out frustration with the overcomplicated or incompatible methods employed in other time analysis fields, such as sound wave or ECG detection. It is has undergone minimal optimisation, though still gives surprisingly good results.</p>
 <p><img alt="Image of full length cDNA showing stall and PolyA tail homopolymer" src="../img/segmenter_fig.jpg" /></p>
@@ -211,6 +217,89 @@ optional arguments:
   -scale_low SCALE_LOW, --scale_low SCALE_LOW
                         Lower limit for signal outlier scaling
 </code></pre>
+
+<h3 id="detailed-parameter-descriptions">Detailed Parameter descriptions</h3>
+<table>
+<thead>
+<tr>
+<th><strong>Segmenter Parameters</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-n --Num</code></td>
+<td>0</td>
+<td>This allows for the signal to be trimmed a static value. Default is 0 which means get all signal. This could be to limit the search space for segments, or to bring the start of a read into focus using <code>-v, --view</code>. For example, <code>-n 2000</code> would cut the raw signal after 2000 datapoints. This may impact where segments are found, so it's best to use this only for testing purpose.</td>
+</tr>
+<tr>
+<td><code>-w --window</code></td>
+<td>200</td>
+<td>The minimum size of a segment that will be detected. Larger structural sections like stalls and homopolymers are significantly bigger than anything else in the signal. However this can vary for a number of reasons, such as the average length of a polyA tail. Stalls can be almost any size. See <code>-l, --stall_len</code> to see how this is handled. Decreasing this value will increase sensitivity, but decrease accuracy. Increasing it will increase accuracy, but reduce sensitivity.</td>
+</tr>
+<tr>
+<td><code>-t --std_scale</code></td>
+<td>0.75</td>
+<td>To detect a segment, a simple yet effective filter is run across the signal. First it calculates the median of the read, then sets two thresholds above and below the median by taking the standard deviation of the read and scaling it by this scale factor. A segment is defined as a region that fluctuates between these two thresholds for at least the minimum window size, <code>-w --window</code>.</td>
+</tr>
+<tr>
+<td><code>-l --stall_len</code></td>
+<td>0.25</td>
+<td>The stall could be a large range of lengths, including quite a fraction smaller than the minimum window for a homopolymer region. Currently, this value just scales the window length, however this may not be the best approach as the window gets very large or very small.</td>
+</tr>
+<tr>
+<td><code>-e --error</code></td>
+<td>5</td>
+<td>Error is defined as the total number of times the signal can rise above or below the thresholds set above and not break the segment detection. This can be modified by other settings.</td>
+</tr>
+<tr>
+<td><code>-c --corrector</code></td>
+<td>50</td>
+<td>The corrector is for helping with long segment detection. Once the segment currently being detected passes the <code>-w --window</code> length, this kicks in and starts increasing the total allowable error for every <code>X</code> values it extends.</td>
+</tr>
+<tr>
+<td><code>-d --seg_dist</code></td>
+<td>50</td>
+<td>If the start of a new segment is within this distance of the last detected segment, it will merge the two segments toghers. This especially helps with long segments that have a significant disruption in them that the error correction can't account for without impacting accuracy.</td>
+</tr>
+<tr>
+<td><code>-scale_low -scale_hi</code></td>
+<td>0, 900</td>
+<td>Throughout nanopore raw signal are large spikes which can impact calculated values such as median and standard deviation. This scale factor helps limit the region in which signal will be included. <strong>Note</strong>: it removes the signals that go out of bounds. The defaults are good for DNA and cDNA. For RNA, <code>-scale_hi 1200</code> is more appropriate. To stop this from working, set both values to -50000 and 50000 respectively.</td>
+</tr>
+<tr>
+<td><strong>User based tests</strong></td>
+<td></td>
+<td>users can modify the <code>test_segs</code> function to automate their own tests</td>
+</tr>
+<tr>
+<td><code>-u --test</code></td>
+<td><code>False</code></td>
+<td>Turn on user tests. This will allow for various tests to be done on the segments. A few have been added for some ideas and how to integrate them into the script.</td>
+</tr>
+<tr>
+<td><code>-k --stall</code></td>
+<td><code>False</code></td>
+<td>Use to turn on Stall detection. Ie, the start position of the first detected segment must be within a given distance.</td>
+</tr>
+<tr>
+<td><code>-j --stall_start</code></td>
+<td>300</td>
+<td>The maximum distance from the start of a read the start position of the first detected segment must be within a given distance.</td>
+</tr>
+<tr>
+<td><code>-g --gap</code></td>
+<td><code>False</code></td>
+<td>Turns on gap distance for detecting a polyTAil within a certain distance of a detected stall</td>
+</tr>
+<tr>
+<td><code>-b -gap_dist</code></td>
+<td>3000</td>
+<td>The maximum distance the end of a stall segment can be from the start of the next segment. useful for finding polyT/A tails within an expected search space.</td>
+</tr>
+</tbody>
+</table>
               
             </div>
           </div>
