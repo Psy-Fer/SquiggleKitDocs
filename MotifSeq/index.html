@@ -175,7 +175,7 @@ ATCGATCGCTATGCTAGCATTACG
 </code></pre>
 <h1 id="full-usage">Full usage</h1>
 <pre><code class="bash">usage: MotifSeq.py [-h] [-f F5F | -p F5_PATH | -s SIGNAL] [-a ADAPT]
-                   [-m MODEL] [--segs SEGS] [-v] [-scale_hi SCALE_HI]
+                   [-m MODEL] [-x] [--segs SEGS] [-v] [-scale_hi SCALE_HI]
                    [-scale_low SCALE_LOW]
 
 MotifSeq - the Ctrl+f for signal. Signal-level local alignment of sequence
@@ -192,14 +192,13 @@ optional arguments:
                         Adapter model file - use to find nanopore adapter
   -m MODEL, --model MODEL
                         Query model file - use for kmer searching
+  -x, --sig_extract     Extract signal of match
   --segs SEGS           [Optional] segmenter file, used with --adapt
   -v, --view            view each output
   -scale_hi SCALE_HI, --scale_hi SCALE_HI
                         Upper limit for signal outlier scaling
   -scale_low SCALE_LOW, --scale_low SCALE_LOW
                         Lower limit for signal outlier scaling
-
-
 </code></pre>
               
             </div>
