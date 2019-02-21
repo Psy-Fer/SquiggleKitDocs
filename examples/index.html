@@ -105,6 +105,8 @@
         
             <li><a class="toctree-l3" href="#nanopore-adapter-detection-in-raw-data">Nanopore Adapter detection in raw data</a></li>
         
+            <li><a class="toctree-l3" href="#find-kmer-motif">Find kmer motif:</a></li>
+        
             <li><a class="toctree-l3" href="#pipelines">Pipelines</a></li>
         
         </ul>
@@ -210,6 +212,18 @@ echo $CMD &amp;&amp; $CMD
 <h2 id="nanopore-adapter-detection-in-raw-data">Nanopore Adapter detection in raw data</h2>
 <pre><code>scrappie squiggle adapter.fa &gt; adapter.model
 python MotifSeq.py -s signals.tsv.gz --segs signals_stall_segments.tsv -a adapter.model &gt; signals_adapters.tsv
+</code></pre>
+<h2 id="find-kmer-motif">Find kmer motif:</h2>
+<p>Building an adapter model:</p>
+<p>fasta format for scrappie:</p>
+<pre><code>&gt;my_kmer_name
+ATCGATCGCTATGCTAGCATTACG
+</code></pre>
+<p>Make the model from scrappie:</p>
+<pre><code>scrappie squiggle my_kmer.fa &gt; scrappie_kmer.model
+</code></pre>
+<p>find the best match to that kmer in the signal:</p>
+<pre><code>python MotifSeq.py -s signals.tsv -m scrappie_kmer.model &gt; signals_kmer.tsv
 </code></pre>
 <h2 id="pipelines">Pipelines</h2>
 <pre><code class="bash"># activate virtual python environment
