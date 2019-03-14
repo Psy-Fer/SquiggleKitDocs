@@ -73,6 +73,8 @@
         
             <li><a class="toctree-l3" href="#quick-start">Quick start</a></li>
         
+            <li><a class="toctree-l3" href="#full-requirements">Full requirements</a></li>
+        
         </ul>
     
 
@@ -197,10 +199,11 @@ pip install numpy h5py sklearn matplotlib
 <pre><code>python segmenter.py -s signals.tsv.gz -ku -j 100 &gt; signals_stall_segments.tsv
 </code></pre>
 <h4 id="motifseq">MotifSeq</h4>
+<p>(see full requirements for MLPY installation instructions)</p>
 <p><strong>Nanopore adapter identification</strong></p>
 <pre><code>python MotifSeq.py -s signals.tsv.gz --segs signals_stall_segments.tsv -a adapter.model -t 120 -d 120 &gt; signals_adapters.tsv
 </code></pre>
-<h4 id="full-requirements">Full requirements</h4>
+<h2 id="full-requirements">Full requirements</h2>
 <p><code>fast5_fetcher,py</code>:</p>
 <ul>
 <li>core python libraries</li>
